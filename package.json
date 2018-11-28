@@ -1,0 +1,38 @@
+{
+  "name": "bhreq",
+  "version": "0.0.1",
+  "description": "HTTP request",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "module": "lib/index.js",
+  "files": [
+    "lib",
+    "src"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "tslint '{src, test}/**/.{ts,tsx}'",
+    "build": "rimraf lib && npm run lint && tsc -p tsconfig.json"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aptogeo/hrq.git"
+  },
+  "keywords": [
+    "HTTP request"
+  ],
+  "author": "Mathieu MAST",
+  "license": "MIT",
+  "devDependencies": {
+    "husky": "^1.2.0",
+    "rimraf": "^2.6.2",
+    "tslint": "^5.11.0",
+    "typescript": "3.1.6"
+  },
+  "dependencies": {}
+}
