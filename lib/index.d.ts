@@ -4,7 +4,7 @@ export interface IRequest {
     responseType?: string;
     timeout?: number;
     body?: any;
-    contentType: string;
+    contentType?: string;
     headers?: {
         [key: string]: string;
     };

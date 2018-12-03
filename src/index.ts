@@ -4,7 +4,7 @@ export interface IRequest {
   responseType?: string;
   timeout?: number;
   body?: any;
-  contentType: string;
+  contentType?: string;
   headers?: { [key: string]: string };
   callbackParam?: string;
 }
@@ -51,14 +51,14 @@ const unsendableRequestError = {
 
 function deserializeBody(data: any, contentType: string): any {
   if (typeof data === 'string') {
-    if (/[\/+](\w+-)?json(-\w+)?/.test(contentType)) {
+    if (/[+-/]json($|[+-])/.test(contentType)) {
       // is JSON
       try {
         return JSON.parse(data);
       } catch (err) {
         console.error(`Error to parse JSON ${err}`);
       }
-    } else if (/[\/+](\w+-)?form(-\w+)?/.test(contentType)) {
+    } else if (/[+-/]form($|[+-])/.test(contentType)) {
       // is Form
       const keyValues = data.split('&');
       const deserializedData = {} as any;
@@ -81,10 +81,10 @@ function deserializeBody(data: any, contentType: string): any {
 function serializeBody(data: any, contentType: string): any {
   let serializedData = data;
   if (typeof data === 'object') {
-    if (/[\/+](\w+-)?json(-\w+)?/.test(contentType)) {
+    if (/[+-/]json($|[+-])/.test(contentType)) {
       // is JSON
       serializedData = JSON.stringify(data);
-    } else if (/[\/+](\w+-)?form(-\w+)?/.test(contentType)) {
+    } else if (/[+-/]form($|[+-])/.test(contentType)) {
       // is Form
       const keyValues: string[] = [];
       for (const key in data) {

@@ -1,2 +1,2 @@
 # bhreq
-HTTP requests
+Browser HTTP requests
