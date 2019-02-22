@@ -1,14 +1,13 @@
 export interface IRequest {
     url: string;
     method?: string;
-    responseType?: string;
     timeout?: number;
     body?: any;
     contentType?: string;
+    responseType?: string;
     headers?: {
         [key: string]: string;
     };
-    callbackParam?: string;
 }
 export interface IResponse {
     text: string;
@@ -16,6 +15,7 @@ export interface IResponse {
     statusText: string;
     status: number;
     contentType: string;
+    responseType: string;
     headers: {
         [key: string]: string;
     };

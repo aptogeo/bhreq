@@ -1,12 +1,11 @@
 export interface IRequest {
   url: string;
   method?: string;
-  responseType?: string;
   timeout?: number;
   body?: any;
   contentType?: string;
+  responseType?: string;
   headers?: { [key: string]: string };
-  callbackParam?: string;
 }
 
 export interface IResponse {
@@ -15,6 +14,7 @@ export interface IResponse {
   statusText: string;
   status: number;
   contentType: string;
+  responseType: string;
   headers: { [key: string]: string };
 }
 
@@ -158,16 +158,19 @@ export function send(request: IRequest): Promise<IResponse> {
         });
       }
       try {
+        const raw = client.response;
+        const responseType = client.responseType;
         // ResponseText is accessible only if responseType is '' or 'text' and on older browsers
         const text =
-          (request.method !== 'HEAD' && (client.responseType === '' || client.responseType === 'text')) ||
-          typeof client.responseType === 'undefined'
+          ((request.method !== 'HEAD' && (responseType === '' || responseType === 'text')) ||
+          (typeof responseType === 'undefined'))
             ? client.responseText
             : null;
         const contentType = client.getResponseHeader(contentTypeHeaderName);
         resolve({
+          responseType,
           text,
-          body: deserializeBody(text ? text : client.response, contentType),
+          body: deserializeBody(text ? text : raw, contentType),
           status,
           statusText,
           contentType,
@@ -196,6 +199,9 @@ export function send(request: IRequest): Promise<IResponse> {
       }
       if (request.contentType) {
         client.setRequestHeader(contentTypeHeaderName, request.contentType);
+      }
+      if (request.responseType) {
+        client.responseType = request.responseType as XMLHttpRequestResponseType;
       }
       if (request.body) {
         client.send(serializeBody(request.body, request.contentType));
