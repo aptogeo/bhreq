@@ -150,12 +150,14 @@ export function send(request: IRequest): Promise<IResponse> {
       } catch (err) {
         console.error(`${indeterminateResponseError.statusText}: ${err}`);
         reject(indeterminateResponseError);
+        return;
       }
-      if (status < 200 && status >= 300) {
+      if (status < 200 || status >= 300) {
         reject({
           status,
           statusText
         });
+        return;
       }
       try {
         const raw = client.response;
@@ -186,6 +188,7 @@ export function send(request: IRequest): Promise<IResponse> {
     } catch (err) {
       console.error(`${unopenableRequestError.statusText}: ${err}`);
       reject(unopenableRequestError);
+      return;
     }
     try {
       if (request.headers) {
