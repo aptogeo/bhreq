@@ -2,7 +2,7 @@ assert = chai.assert;
 
 describe('Request', function () {
   it('get_json', function (done) {
-    send({
+    bhreq.send({
       url: 'https://httpbin.org/get?arg1=1&arg2=2'
     }).then(function (res) {
       assert.equal(200, res.status);
@@ -12,7 +12,7 @@ describe('Request', function () {
     });
   });
   it('post_json', function (done) {
-    send({
+    bhreq.send({
       url: 'https://httpbin.org/post',
       method: 'POST',
       body: { arg1: 1, arg2: 2 },
@@ -24,8 +24,30 @@ describe('Request', function () {
       done();
     });
   });
+  it('encode_decode_msgpack', function (done) {
+    var data = bhreq.msgpack.encode({
+      arg1: 1, arg2: 2
+    });
+    console.log(data);
+    var obj = bhreq.msgpack.decode(data);
+    console.log(obj);
+    assert.equal(1, obj.arg1);
+    assert.equal(2, obj.arg2);
+    done();
+  });
+  it('post_msgpack', function (done) {
+    bhreq.send({
+      url: 'https://httpbin.org/post',
+      method: 'POST',
+      body: { arg1: 1, arg2: 2 },
+      contentType: 'application/x-msgpack'
+    }).then(function (res) {
+      assert.equal(200, res.status);
+      done();
+    });
+  });
   it('put_form', function (done) {
-    send({
+    bhreq.send({
       url: 'https://httpbin.org/put',
       method: 'PUT',
       body: { arg1: 1, arg2: 2 },
@@ -38,7 +60,7 @@ describe('Request', function () {
     });
   });
   it('get_jpg', function (done) {
-    send({
+    bhreq.send({
       url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/The_Earth_seen_from_Apollo_17.jpg/145px-The_Earth_seen_from_Apollo_17.jpg',
       responseType: 'blob'
     }).then(function (res) {
