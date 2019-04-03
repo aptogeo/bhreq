@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/aptogeo/hrq.git"
+    "url": "https://github.com/aptogeo/bhreq.git"
   },
   "keywords": [
     "HTTP request"
