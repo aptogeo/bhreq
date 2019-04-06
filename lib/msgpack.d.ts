@@ -6,6 +6,7 @@ export declare class MsgpackEncoder {
     private floatBuffer;
     private floatView;
     private array;
+    private length;
     encode(data: any): Uint8Array;
     private append;
     private appendNull;

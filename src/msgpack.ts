@@ -50,9 +50,11 @@ export class MsgpackEncoder {
 	private floatBuffer: ArrayBuffer;
 	private floatView: DataView;
 	private array: Uint8Array;
+	private length: number;
 
 	public encode(data: any): Uint8Array {
 		this.array = new Uint8Array(128);
+		this.length = 0;
 		this.append(data);
 		return this.array;
 	}
@@ -156,14 +158,15 @@ export class MsgpackEncoder {
 		let bytes = this.encodeUtf8(data);
 		let length = bytes.length;
 
-		if (length <= 0x1f)
+		if (length <= 0x1f) {
 			this.appendByte(0xa0 + length);
-		else if (length <= 0xff)
+		} else if (length <= 0xff) {
 			this.appendBytes([0xd9, length]);
-		else if (length <= 0xffff)
+		} else if (length <= 0xffff) {
 			this.appendBytes([0xda, length >>> 8, length]);
-		else
+		} else {
 			this.appendBytes([0xdb, length >>> 24, length >>> 16, length >>> 8, length]);
+		}
 
 		this.appendBytes(bytes);
 	}
@@ -184,28 +187,32 @@ export class MsgpackEncoder {
 	}
 
 	private appendBinArray(data: bytestype) {
-		let length = data.length;
+		const length = data.length;
 
-		if (length <= 0xf)
+		if (length <= 0xf) {
 			this.appendBytes([0xc4, length]);
-		else if (length <= 0xffff)
+		} else if (length <= 0xffff) {
 			this.appendBytes([0xc5, length >>> 8, length]);
-		else
+		} else {
 			this.appendBytes([0xc6, length >>> 24, length >>> 16, length >>> 8, length]);
+		}
 
 		this.appendBytes(data);
 	}
 
 	private appendObject(data: { [key: string]: any; }) {
 		let length = 0;
-		for (let key in data) length++;
+		for (let key in data) {
+			length++;
+		}
 
-		if (length <= 0xf)
+		if (length <= 0xf) {
 			this.appendByte(0x80 + length);
-		else if (length <= 0xffff)
+		} else if (length <= 0xffff) {
 			this.appendBytes([0xde, length >>> 8, length]);
-		else
+		} else {
 			this.appendBytes([0xdf, length >>> 24, length >>> 16, length >>> 8, length]);
+		}
 
 		for (let key in data) {
 			this.append(key);
@@ -230,29 +237,31 @@ export class MsgpackEncoder {
 	}
 
 	private appendByte(byte: number) {
-		if (this.array.length < length + 1) {
+		if (this.array.length < this.length + 1) {
 			let newLength = this.array.length * 2;
-			while (newLength < length + 1)
+			while (newLength < this.length + 1) {
 				newLength *= 2;
+			}
 			let newArray = new Uint8Array(newLength);
 			newArray.set(this.array);
 			this.array = newArray;
 		}
-		this.array[length] = byte;
-		length++;
+		this.array[this.length] = byte;
+		this.length++;
 	}
 
 	private appendBytes(bytes: bytestype) {
-		if (this.array.length < length + bytes.length) {
+		if (this.array.length < this.length + bytes.length) {
 			let newLength = this.array.length * 2;
-			while (newLength < length + bytes.length)
+			while (newLength < this.length + bytes.length) {
 				newLength *= 2;
+			}
 			let newArray = new Uint8Array(newLength);
 			newArray.set(this.array);
 			this.array = newArray;
 		}
-		this.array.set(bytes, length);
-		length += bytes.length;
+		this.array.set(bytes, this.length);
+		this.length += bytes.length;
 	}
 
 	private appendInt64(value: number) {
@@ -278,7 +287,8 @@ export class MsgpackEncoder {
 	// Encodes a string to UTF-8 bytes.
 	private encodeUtf8(str: string): Uint8Array {
 		// Prevent excessive array allocation and slicing for all 7-bit characters
-		let ascii = true, length = str.length;
+		let ascii = true;
+		const length = str.length;
 		for (let x = 0; x < length; x++) {
 			if (str.charCodeAt(x) > 127) {
 				ascii = false;
@@ -286,7 +296,8 @@ export class MsgpackEncoder {
 			}
 		}
 		// Based on: https://gist.github.com/pascaldekloe/62546103a1576803dade9269ccf76330
-		let i = 0, bytes = new Uint8Array(str.length * (ascii ? 1 : 4));
+		let i = 0
+		const bytes = new Uint8Array(str.length * (ascii ? 1 : 4));
 		for (let ci = 0; ci !== length; ci++) {
 			let c = str.charCodeAt(ci);
 			if (c < 128) {
@@ -298,16 +309,19 @@ export class MsgpackEncoder {
 			}
 			else {
 				if (c > 0xd7ff && c < 0xdc00) {
-					if (++ci >= length)
+					if (++ci >= length)  {
 						throw new Error("UTF-8 encode: incomplete surrogate pair");
+					}
 					let c2 = str.charCodeAt(ci);
-					if (c2 < 0xdc00 || c2 > 0xdfff)
+					if (c2 < 0xdc00 || c2 > 0xdfff) {
 						throw new Error("UTF-8 encode: second surrogate character 0x" + c2.toString(16) + " at index " + ci + " out of range");
+					}
 					c = 0x10000 + ((c & 0x03ff) << 10) + (c2 & 0x03ff);
 					bytes[i++] = c >> 18 | 240;
 					bytes[i++] = c >> 12 & 63 | 128;
+				} else {
+					bytes[i++] = c >> 12 | 224;
 				}
-				else bytes[i++] = c >> 12 | 224;
 				bytes[i++] = c >> 6 & 63 | 128;
 			}
 			bytes[i++] = c & 63 | 128;

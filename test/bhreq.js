@@ -266,6 +266,7 @@ var MsgpackEncoder = /** @class */ (function () {
     }
     MsgpackEncoder.prototype.encode = function (data) {
         this.array = new Uint8Array(128);
+        this.length = 0;
         this.append(data);
         return this.array;
     };
@@ -363,14 +364,18 @@ var MsgpackEncoder = /** @class */ (function () {
     MsgpackEncoder.prototype.appendString = function (data) {
         var bytes = this.encodeUtf8(data);
         var length = bytes.length;
-        if (length <= 0x1f)
+        if (length <= 0x1f) {
             this.appendByte(0xa0 + length);
-        else if (length <= 0xff)
+        }
+        else if (length <= 0xff) {
             this.appendBytes([0xd9, length]);
-        else if (length <= 0xffff)
+        }
+        else if (length <= 0xffff) {
             this.appendBytes([0xda, length >>> 8, length]);
-        else
+        }
+        else {
             this.appendBytes([0xdb, length >>> 24, length >>> 16, length >>> 8, length]);
+        }
         this.appendBytes(bytes);
     };
     MsgpackEncoder.prototype.appendArray = function (data) {
@@ -387,24 +392,31 @@ var MsgpackEncoder = /** @class */ (function () {
     };
     MsgpackEncoder.prototype.appendBinArray = function (data) {
         var length = data.length;
-        if (length <= 0xf)
+        if (length <= 0xf) {
             this.appendBytes([0xc4, length]);
-        else if (length <= 0xffff)
+        }
+        else if (length <= 0xffff) {
             this.appendBytes([0xc5, length >>> 8, length]);
-        else
+        }
+        else {
             this.appendBytes([0xc6, length >>> 24, length >>> 16, length >>> 8, length]);
+        }
         this.appendBytes(data);
     };
     MsgpackEncoder.prototype.appendObject = function (data) {
         var length = 0;
-        for (var key in data)
+        for (var key in data) {
             length++;
-        if (length <= 0xf)
+        }
+        if (length <= 0xf) {
             this.appendByte(0x80 + length);
-        else if (length <= 0xffff)
+        }
+        else if (length <= 0xffff) {
             this.appendBytes([0xde, length >>> 8, length]);
-        else
+        }
+        else {
             this.appendBytes([0xdf, length >>> 24, length >>> 16, length >>> 8, length]);
+        }
         for (var key in data) {
             this.append(key);
             this.append(data[key]);
@@ -426,28 +438,30 @@ var MsgpackEncoder = /** @class */ (function () {
         }
     };
     MsgpackEncoder.prototype.appendByte = function (byte) {
-        if (this.array.length < length + 1) {
+        if (this.array.length < this.length + 1) {
             var newLength = this.array.length * 2;
-            while (newLength < length + 1)
+            while (newLength < this.length + 1) {
                 newLength *= 2;
+            }
             var newArray = new Uint8Array(newLength);
             newArray.set(this.array);
             this.array = newArray;
         }
-        this.array[length] = byte;
-        length++;
+        this.array[this.length] = byte;
+        this.length++;
     };
     MsgpackEncoder.prototype.appendBytes = function (bytes) {
-        if (this.array.length < length + bytes.length) {
+        if (this.array.length < this.length + bytes.length) {
             var newLength = this.array.length * 2;
-            while (newLength < length + bytes.length)
+            while (newLength < this.length + bytes.length) {
                 newLength *= 2;
+            }
             var newArray = new Uint8Array(newLength);
             newArray.set(this.array);
             this.array = newArray;
         }
-        this.array.set(bytes, length);
-        length += bytes.length;
+        this.array.set(bytes, this.length);
+        this.length += bytes.length;
     };
     MsgpackEncoder.prototype.appendInt64 = function (value) {
         // Split 64 bit number into two 32 bit numbers because JavaScript only regards 32 bits for
@@ -471,7 +485,8 @@ var MsgpackEncoder = /** @class */ (function () {
     // Encodes a string to UTF-8 bytes.
     MsgpackEncoder.prototype.encodeUtf8 = function (str) {
         // Prevent excessive array allocation and slicing for all 7-bit characters
-        var ascii = true, length = str.length;
+        var ascii = true;
+        var length = str.length;
         for (var x = 0; x < length; x++) {
             if (str.charCodeAt(x) > 127) {
                 ascii = false;
@@ -479,7 +494,8 @@ var MsgpackEncoder = /** @class */ (function () {
             }
         }
         // Based on: https://gist.github.com/pascaldekloe/62546103a1576803dade9269ccf76330
-        var i = 0, bytes = new Uint8Array(str.length * (ascii ? 1 : 4));
+        var i = 0;
+        var bytes = new Uint8Array(str.length * (ascii ? 1 : 4));
         for (var ci = 0; ci !== length; ci++) {
             var c = str.charCodeAt(ci);
             if (c < 128) {
@@ -491,17 +507,20 @@ var MsgpackEncoder = /** @class */ (function () {
             }
             else {
                 if (c > 0xd7ff && c < 0xdc00) {
-                    if (++ci >= length)
+                    if (++ci >= length) {
                         throw new Error("UTF-8 encode: incomplete surrogate pair");
+                    }
                     var c2 = str.charCodeAt(ci);
-                    if (c2 < 0xdc00 || c2 > 0xdfff)
+                    if (c2 < 0xdc00 || c2 > 0xdfff) {
                         throw new Error("UTF-8 encode: second surrogate character 0x" + c2.toString(16) + " at index " + ci + " out of range");
+                    }
                     c = 0x10000 + ((c & 0x03ff) << 10) + (c2 & 0x03ff);
                     bytes[i++] = c >> 18 | 240;
                     bytes[i++] = c >> 12 & 63 | 128;
                 }
-                else
+                else {
                     bytes[i++] = c >> 12 | 224;
+                }
                 bytes[i++] = c >> 6 & 63 | 128;
             }
             bytes[i++] = c & 63 | 128;

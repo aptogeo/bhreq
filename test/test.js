@@ -25,14 +25,19 @@ describe('Request', function () {
     });
   });
   it('encode_decode_msgpack', function (done) {
-    var data = bhreq.msgpack.encode({
-      arg1: 1, arg2: 2
+    const date = Date.now;
+    var enc1 = bhreq.msgpack.encode({
+      num1: 1, str1: 'string1'
     });
-    console.log(data);
-    var obj = bhreq.msgpack.decode(data);
-    console.log(obj);
-    assert.equal(1, obj.arg1);
-    assert.equal(2, obj.arg2);
+    var enc2 = bhreq.msgpack.encode({
+      str2: 'string2', num2: 2, sub: { arr: ['a', 1, 'azerty'], date: date }
+    });
+    var obj1 = bhreq.msgpack.decode(enc1);
+    var obj2 = bhreq.msgpack.decode(enc2);
+    assert.equal(1, obj1.num1);
+    assert.equal('string1', obj1.str1);
+    assert.equal(2, obj2.num2);
+    assert.equal('string2', obj2.str2);
     done();
   });
   it('post_msgpack', function (done) {
