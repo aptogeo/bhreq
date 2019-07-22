@@ -53,14 +53,14 @@ const unsendableRequestError = {
 
 function deserializeBody(data: any, contentType: string): any {
   if (typeof data === 'string') {
-    if (/[+-/]json($|[+-;])/.test(contentType)) {
+    if (/[+-/]json($|[+-;])/i.test(contentType)) {
       // is JSON
       try {
         return JSON.parse(data);
       } catch (err) {
         console.error(`Error to parse JSON ${err}`);
       }
-    } else if (/[+-/]form($|[+-;])/.test(contentType)) {
+    } else if (/[+-/]form($|[+-;])/i.test(contentType)) {
       // is Form
       const keyValues = data.split('&');
       const deserializedData = {} as any;
@@ -75,7 +75,7 @@ function deserializeBody(data: any, contentType: string): any {
     } else {
       return data;
     }
-  } else if (/[+-/](msgpack|messagepack)($|[+-;])/.test(contentType)) {
+  } else if (/[+-/](msgpack|messagepack)($|[+-;])/i.test(contentType)) {
     // is Messsage pack
     try {
       return msgpack.decode(new Uint8Array(data));
@@ -102,7 +102,7 @@ function serializeBody(data: any, contentType: string): any {
         }
       }
       serializedData = keyValues.join('&');
-    } else if (/[+-/]msgpack($|[+-;])/i.test(contentType) || /[+-/]messagepack($|[+-;])/i.test(contentType)) {
+    } else if (/[+-/]msgpack|messagepack($|[+-;])/i.test(contentType)) {
       // is Messsage pack
       serializedData = msgpack.encode(data);
     }
