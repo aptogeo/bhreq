@@ -90,10 +90,10 @@ function deserializeBody(data: any, contentType: string): any {
 function serializeBody(data: any, contentType: string): any {
   let serializedData = data;
   if (typeof data === 'object') {
-    if (/[+-/]json($|[+-;])/.test(contentType)) {
+    if (/[+-/]json($|[+-;])/i.test(contentType)) {
       // is JSON
       serializedData = JSON.stringify(data);
-    } else if (/[+-/]form($|[+-;])/.test(contentType)) {
+    } else if (/[+-/]form($|[+-;])/i.test(contentType)) {
       // is Form
       const keyValues: string[] = [];
       for (const key in data) {
@@ -102,7 +102,7 @@ function serializeBody(data: any, contentType: string): any {
         }
       }
       serializedData = keyValues.join('&');
-    } else if (/[+-/]msgpack($|[+-;])/.test(contentType) || /[+-/]messagepack($|[+-;])/.test(contentType)) {
+    } else if (/[+-/]msgpack($|[+-;])/i.test(contentType) || /[+-/]messagepack($|[+-;])/i.test(contentType)) {
       // is Messsage pack
       serializedData = msgpack.encode(data);
     }
