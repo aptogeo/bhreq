@@ -1,6 +1,6 @@
 {
   "name": "bhreq",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Browser HTTP requests",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -29,10 +29,10 @@
   "author": "Mathieu MAST",
   "license": "MIT",
   "devDependencies": {
-    "browserify": "^16.2.3",
-    "husky": "^2.4.0",
+    "browserify": "^16.3.0",
+    "husky": "^3.0.1",
     "rimraf": "^2.6.3",
-    "tslint": "^5.17.0",
-    "typescript": "3.5.1"
+    "tslint": "^5.18.0",
+    "typescript": "3.5.3"
   }
 }

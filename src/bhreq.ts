@@ -129,7 +129,7 @@ function deserializeHeaders(data: string): { [key: string]: string } {
  * @returns {Promise<IResponse>}
  */
 export function send(request: IRequest): Promise<IResponse> {
-  const normUrl = request.url.replace(/[^:](\/{2,})/g, '/').replace(/\/\.\//g, '/');
+  const normUrl = request.url.replace(/([^:])\/\//g, '$1/').replace(/\/\.\//g, '/');
   return new Promise((resolve, reject) => {
     const client = new XMLHttpRequest();
     let timer = setTimeout(
