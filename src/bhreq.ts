@@ -48,7 +48,7 @@ const unopenableRequestError = {
 
 const unsendableRequestError = {
   status: 409,
-  statusText: 'Unable to sebd the request'
+  statusText: 'Unable to send the request'
 };
 
 function deserializeBody(data: any, contentType: string): any {
@@ -167,7 +167,8 @@ export function send(request: IRequest): Promise<IResponse> {
       if (status < 200 || status >= 300) {
         reject({
           status,
-          statusText
+          statusText,
+          text: client.response
         });
         return;
       }

@@ -23,7 +23,7 @@ var unopenableRequestError = {
 };
 var unsendableRequestError = {
     status: 409,
-    statusText: 'Unable to sebd the request'
+    statusText: 'Unable to send the request'
 };
 function deserializeBody(data, contentType) {
     if (typeof data === 'string') {
@@ -147,7 +147,8 @@ function send(request) {
             if (status < 200 || status >= 300) {
                 reject({
                     status: status,
-                    statusText: statusText
+                    statusText: statusText,
+                    text: client.response
                 });
                 return;
             }
