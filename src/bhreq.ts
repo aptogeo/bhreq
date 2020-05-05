@@ -144,6 +144,11 @@ export function send(request: IRequest): Promise<IResponse> {
       },
       request && request.timeout ? request.timeout : defaultTimeout
     );
+    client.onerror = (err) => {
+      clearTimeout(timer);
+      timer = null;
+      reject(indeterminateResponseError);
+    };
     client.onreadystatechange = () => {
       if (client.readyState >= 2 && timer) {
         clearTimeout(timer);
