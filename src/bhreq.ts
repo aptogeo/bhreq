@@ -6,7 +6,7 @@ export interface IRequest {
   timeout?: number;
   body?: any;
   contentType?: string;
-  responseType?: string;
+  responseType?: XMLHttpRequestResponseType;
   headers?: { [key: string]: string };
 }
 
@@ -16,7 +16,7 @@ export interface IResponse {
   statusText: string;
   status: number;
   contentType: string;
-  responseType: string;
+  responseType: XMLHttpRequestResponseType;
   headers: { [key: string]: string };
 }
 
@@ -222,7 +222,7 @@ export function send(request: IRequest): Promise<IResponse> {
         client.setRequestHeader(contentTypeHeaderName, request.contentType);
       }
       if (request.responseType) {
-        client.responseType = request.responseType as XMLHttpRequestResponseType;
+        client.responseType = request.responseType;
       }
       if (request.body) {
         client.send(serializeBody(request.body, request.contentType));
