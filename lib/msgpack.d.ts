@@ -1,6 +1,6 @@
 export declare const msgpack: {
     encode: (data: any) => Uint8Array;
-    decode: (array: number[] | Uint8Array) => any;
+    decode: (array: Uint8Array | number[]) => any;
 };
 export declare class MsgpackEncoder {
     private floatBuffer;

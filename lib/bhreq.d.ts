@@ -4,7 +4,7 @@ export interface IRequest {
     timeout?: number;
     body?: any;
     contentType?: string;
-    responseType?: string;
+    responseType?: XMLHttpRequestResponseType;
     headers?: {
         [key: string]: string;
     };
@@ -15,7 +15,7 @@ export interface IResponse {
     statusText: string;
     status: number;
     contentType: string;
-    responseType: string;
+    responseType: XMLHttpRequestResponseType;
     headers: {
         [key: string]: string;
     };
