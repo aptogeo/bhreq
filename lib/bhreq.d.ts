@@ -3,6 +3,9 @@ export interface IRequest {
     method?: string;
     timeout?: number;
     body?: any;
+    params?: {
+        [key: string]: string;
+    };
     contentType?: string;
     responseType?: XMLHttpRequestResponseType;
     headers?: {
@@ -27,3 +30,20 @@ export interface IResponse {
  * @returns {Promise<IResponse>}
  */
 export declare function send(request: IRequest): Promise<IResponse>;
+/**
+ * Before send interceptor.
+ */
+export declare type BeforeSendInterceptor = (params: IRequest) => IRequest;
+/**
+ * After received interceptor.
+ */
+export declare type AfterReceivedInterceptor = (params: IResponse) => IResponse;
+export declare class Engine {
+    private static instances;
+    beforeSendInterceptors: BeforeSendInterceptor[];
+    afterReceivedInterceptors: AfterReceivedInterceptor[];
+    private constructor();
+    static getInstance(name?: string): Engine;
+    send(rawRequest: IRequest): Promise<IResponse>;
+    private treatResponse;
+}

@@ -5,6 +5,7 @@ export interface IRequest {
   method?: string;
   timeout?: number;
   body?: any;
+  params?: { [key: string]: string };
   contentType?: string;
   responseType?: XMLHttpRequestResponseType;
   headers?: { [key: string]: string };
@@ -110,6 +111,14 @@ function serializeBody(data: any, contentType: string): any {
   return serializedData;
 }
 
+function serializeParams(params: { [key: string]: string }): any {
+  const keyValues: string[] = [];
+  for (const key in params) {
+    keyValues.push(`${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`);
+  }
+  return keyValues.join('&');
+}
+
 function deserializeHeaders(data: string): { [key: string]: string } {
   const headers: { [key: string]: string } = {};
   const lines = data.split(/\r?\n/);
@@ -129,7 +138,14 @@ function deserializeHeaders(data: string): { [key: string]: string } {
  * @returns {Promise<IResponse>}
  */
 export function send(request: IRequest): Promise<IResponse> {
-  const normUrl = request.url.replace(/([^:])\/\//g, '$1/').replace(/\/\.\//g, '/');
+  let normUrl = request.url.replace(/([^:])\/\//g, '$1/').replace(/\/\.\//g, '/');
+  if (request.params) {
+    if (normUrl.indexOf('?') > 0) {
+      normUrl += '&' + serializeParams(request.params);
+    } else {
+      normUrl += '?' + serializeParams(request.params);
+    }
+  }
   return new Promise((resolve, reject) => {
     const client = new XMLHttpRequest();
     let timer = setTimeout(
@@ -234,4 +250,51 @@ export function send(request: IRequest): Promise<IResponse> {
       reject(unsendableRequestError);
     }
   });
+}
+
+/**
+ * Before send interceptor.
+ */
+export type BeforeSendInterceptor = (params: IRequest) => IRequest;
+
+/**
+ * After received interceptor.
+ */
+export type AfterReceivedInterceptor = (params: IResponse) => IResponse;
+
+export class Engine {
+  private static instances: { [key: string]: Engine };
+  public beforeSendInterceptors: BeforeSendInterceptor[];
+  public afterReceivedInterceptors: AfterReceivedInterceptor[];
+
+  private constructor() {
+    this.beforeSendInterceptors = [];
+    this.afterReceivedInterceptors = [];
+  }
+
+  static getInstance(name = 'default'): Engine {
+    if (!this.instances) {
+      this.instances = {};
+    }
+    if (!this.instances[name]) {
+      this.instances[name] = new Engine();
+    }
+    return this.instances[name];
+  }
+
+  public send(rawRequest: IRequest): Promise<IResponse> {
+    let request: IRequest = rawRequest;
+    this.beforeSendInterceptors.forEach((interceptor) => {
+      request = interceptor(request);
+    });
+    return send(request).then(this.treatResponse);
+  }
+
+  private treatResponse = (rawResponse: IResponse): IResponse => {
+    let response = rawResponse;
+    this.afterReceivedInterceptors.forEach((interceptor) => {
+      response = interceptor(response);
+    });
+    return response;
+  };
 }

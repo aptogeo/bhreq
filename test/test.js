@@ -11,6 +11,29 @@ describe('Request', function () {
       done();
     });
   });
+  it('get_json_params_1', function (done) {
+    bhreq.send({
+      url: 'https://httpbin.org/get',
+      params: { arg1: '1', arg2: '2' }
+    }).then(function (res) {
+      assert.equal(200, res.status);
+      assert.equal('1', res.body.args.arg1);
+      assert.equal('2', res.body.args.arg2);
+      done();
+    });
+  });
+  it('get_json_params_2', function (done) {
+    bhreq.send({
+      url: 'https://httpbin.org/get?arg1=1&arg2=2',
+      params: { arg3: '3' }
+    }).then(function (res) {
+      assert.equal(200, res.status);
+      assert.equal('1', res.body.args.arg1);
+      assert.equal('2', res.body.args.arg2);
+      assert.equal('3', res.body.args.arg3);
+      done();
+    });
+  });
   it('post_json', function (done) {
     bhreq.send({
       url: 'https://httpbin.org/post',

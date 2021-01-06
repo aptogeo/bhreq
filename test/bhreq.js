@@ -1,7 +1,7 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.bhreq = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.send = void 0;
+exports.Engine = exports.send = void 0;
 var msgpack_1 = require("./msgpack");
 var defaultTimeout = 10000;
 var defaultMethod = 'GET';
@@ -92,6 +92,13 @@ function serializeBody(data, contentType) {
     }
     return serializedData;
 }
+function serializeParams(params) {
+    var keyValues = [];
+    for (var key in params) {
+        keyValues.push(encodeURIComponent(key) + "=" + encodeURIComponent(params[key]));
+    }
+    return keyValues.join('&');
+}
 function deserializeHeaders(data) {
     var headers = {};
     var lines = data.split(/\r?\n/);
@@ -112,6 +119,14 @@ function deserializeHeaders(data) {
  */
 function send(request) {
     var normUrl = request.url.replace(/([^:])\/\//g, '$1/').replace(/\/\.\//g, '/');
+    if (request.params) {
+        if (normUrl.indexOf('?') > 0) {
+            normUrl += '&' + serializeParams(request.params);
+        }
+        else {
+            normUrl += '?' + serializeParams(request.params);
+        }
+    }
     return new Promise(function (resolve, reject) {
         var client = new XMLHttpRequest();
         var timer = setTimeout(function () {
@@ -221,6 +236,39 @@ function send(request) {
     });
 }
 exports.send = send;
+var Engine = /** @class */ (function () {
+    function Engine() {
+        var _this = this;
+        this.treatResponse = function (rawResponse) {
+            var response = rawResponse;
+            _this.afterReceivedInterceptors.forEach(function (interceptor) {
+                response = interceptor(response);
+            });
+            return response;
+        };
+        this.beforeSendInterceptors = [];
+        this.afterReceivedInterceptors = [];
+    }
+    Engine.getInstance = function (name) {
+        if (name === void 0) { name = 'default'; }
+        if (!this.instances) {
+            this.instances = {};
+        }
+        if (!this.instances[name]) {
+            this.instances[name] = new Engine();
+        }
+        return this.instances[name];
+    };
+    Engine.prototype.send = function (rawRequest) {
+        var request = rawRequest;
+        this.beforeSendInterceptors.forEach(function (interceptor) {
+            request = interceptor(request);
+        });
+        return send(request).then(this.treatResponse);
+    };
+    return Engine;
+}());
+exports.Engine = Engine;
 
 },{"./msgpack":3}],2:[function(require,module,exports){
 "use strict";
@@ -232,7 +280,7 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     o[k2] = m[k];
 }));
 var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./bhreq"), exports);
