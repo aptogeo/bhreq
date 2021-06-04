@@ -60,6 +60,7 @@ function deserializeBody(data: any, contentType: string): any {
         return JSON.parse(data);
       } catch (err) {
         console.error(`Error to parse JSON ${err}`);
+        return data;
       }
     } else if (/[+-/]form($|[+-;])/i.test(contentType)) {
       // is Form
@@ -73,6 +74,7 @@ function deserializeBody(data: any, contentType: string): any {
           deserializedData[key] = value;
         }
       }
+      return deserializedData;
     } else {
       return data;
     }
@@ -82,6 +84,7 @@ function deserializeBody(data: any, contentType: string): any {
       return msgpack.decode(new Uint8Array(data));
     } catch (err) {
       console.error(`Error to parse Msgpack ${err}`);
+      return data;
     }
   } else {
     return data;

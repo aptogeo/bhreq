@@ -35,6 +35,7 @@ function deserializeBody(data, contentType) {
             }
             catch (err) {
                 console.error("Error to parse JSON " + err);
+                return data;
             }
         }
         else if (/[+-/]form($|[+-;])/i.test(contentType)) {
@@ -50,6 +51,7 @@ function deserializeBody(data, contentType) {
                     deserializedData[key] = value;
                 }
             }
+            return deserializedData;
         }
         else {
             return data;
@@ -62,6 +64,7 @@ function deserializeBody(data, contentType) {
         }
         catch (err) {
             console.error("Error to parse Msgpack " + err);
+            return data;
         }
     }
     else {
